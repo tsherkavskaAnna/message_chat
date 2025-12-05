@@ -1,12 +1,6 @@
 const mongoose = require("mongoose");   
 
 const contactSchema = new mongoose.Schema({
-    connectCode: {
-        type: String,
-        required: true,
-        unique: true,
-        index: true,
-    },
     fullName: {
         type: String,
         required: true,
@@ -30,9 +24,13 @@ const contactSchema = new mongoose.Schema({
     },
     image: {
         type: String,
-    }
     },
-    {timestamps: true}
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    }
+    }, { versionKey: false, timestamps: true }
 )
 module.exports = mongoose.model("Contact", contactSchema);
 

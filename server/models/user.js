@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
-        mongoose: emailRegexp,
+        match: emailRegexp,
     },
     password: {
         type: String,
@@ -25,13 +25,7 @@ const userSchema = new mongoose.Schema({
     avatarImage: {
         type: String,
         default: "",
-  },
-    contacts: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Contact"
-        }
-    ]
+    },
     },
     {timestamps: true}
 )

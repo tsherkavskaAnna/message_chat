@@ -9,7 +9,6 @@ const addUserSchema = Joi.object({
     email: Joi.string().email().required().pattern(emailRegexp),
     password: Joi.string().min(6).required(),
     avatarImage: Joi.string().uri().optional(),
-    contacts: Joi.array().items(Joi.string()).optional()
 });
 
 const addLoginUserSchema = Joi.object({

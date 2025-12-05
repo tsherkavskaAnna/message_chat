@@ -47,14 +47,3 @@ server.listen((PORT), () => {
 })
 
 
-/* mongoose.connect(process.env.MONGO_URI)
-       try {
-             console.log("🟢 Database connection successful")
-             server.listen((PORT), () => {
-                  console.log(`🚀 Server running on port ${PORT}`);
-            });
-       } catch (error) {
-             console.log("❌ MongoDB connection error:", err);
-             process.exit(1);
-       }
-       */

@@ -4,7 +4,7 @@ const { HttpError } = require('../../helpers');
 const ctrlWrapper = require('../../helpers/controlWrapper');
 
 const getAllContacts = async (req, res) => {
-      const contacts = await Contact.find();
+      const contacts = await Contact.find({ owner: req.user._id });
       return res.status(201).json({
             status: "success",
             code: 200,
@@ -14,8 +14,11 @@ const getAllContacts = async (req, res) => {
 
 
 const createnNewContact = async (req, res) => {
-      const contact = new Contact(req.body);
-            await contact.save();
+      const contact = await Contact.create({
+            ...req.body,
+            owner: req.user._id
+      });
+      
             return res.status(201).json({
                   status: "success",
                   code: 201,
@@ -26,7 +29,12 @@ const createnNewContact = async (req, res) => {
 
 const updateContact = async (req, res) => {
       const { contactId } = req.params;
-            const contact = await Contact.findByIdAndUpdate(contactId, req.body, { new: true })
+      const contact = await Contact.findOneAndUpdate(
+            { _id: contactId, owner: req.user._id },  
+            req.body,
+            { new: true }
+      );
+
             if (!contact) {
                  throw  HttpError(404, "Not found contact");   
             }
@@ -42,7 +50,9 @@ const updateContact = async (req, res) => {
 
 const deleteContact = async (req, res) => {
       const { contactId } = req.params;
-      const contact = await Contact.findByIdAndDelete(contactId)
+      const contact = await Contact.findOneAndDelete(
+            { _id: contactId, owner: req.user._id });
+
             if (!contact) {
                   throw HttpError(404, "Not found contact");
                   
