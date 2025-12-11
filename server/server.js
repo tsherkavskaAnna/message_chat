@@ -11,7 +11,7 @@ const contactsRouter = require("./routes/api/contcts.routes");
 const authRouter = require("./routes/api/users.routes");
 const chatRouter = require("./routes/api/chat.routes")
 
-const PORT = process.env.PORT || 8080; 
+const PORT = process.env.PORT || 8080; ;
 
 const app = express();
 app.use(cors());
@@ -21,7 +21,6 @@ app.use(cookieParser());
 app.use("/api/contacts", contactsRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/chat", chatRouter);
-
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -42,6 +41,14 @@ io.on('connection', (socket) => {
 app.get('/', (req, res) => {
       res.send('Hello World!')
 })
+
+app.use((err, req, res, next) => {
+    console.error(err);
+    res.status(err.status || 500).json({
+        status: "error",
+        message: err.message || "Internal Server Error"
+    });
+});
 
 
 server.listen((PORT), () => {

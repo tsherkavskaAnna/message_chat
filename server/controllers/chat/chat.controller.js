@@ -1,14 +1,16 @@
 const Chat = require('../../models/Chat');
 const Message = require('../../models/Message');
 
-const { HttpError } = require('../../helpers');
 const ctrlWrapper = require('../../helpers/controlWrapper');
 const mongoose = require('mongoose');
 
-//ricevere massagi di user logato
+//ricevere massagi di user logato con paginazione
 const getMessagesByUserId = async (req, res) => {
     const currentUserId = req.user._id;
     const receiverId = req.params.contactId;
+    const limit = Number(req.query.limit) || 5;
+    const page = Number(req.query.page) || 1;
+    const skip = (page - 1) * limit;
 
     const chat = await Chat.findOne({
         participants: { $all: [currentUserId, receiverId] }
@@ -20,22 +22,37 @@ const getMessagesByUserId = async (req, res) => {
 
     const messages = await Message.find({
         chatId: chat._id
-    }).sort('createdAt');
+    }).sort('createdAt').skip(skip).limit(limit);
+    
+    await Message.updateMany(
+        { chatId: chat._id, read: false, senderId: { $ne: currentUserId } },
+        { $set: { read: true, readAt: Date()} }
+    )
 
     res.status(200).json({
         status: "success",
         chatId: chat._id,
-        messages
+        messages,
+        page,
+        limit
     })
 }
 
 
-//cercare chat esistente o creare nuovo per inviatre massagio
+//cercare chat esistente o creare nuovo per inviatre massagio con file (imagini)
 const sendMessage = async (req, res) => {
     const currentUserId = req.user._id;
     const receiverId = new mongoose.Types.ObjectId(req.params.contactId);
     const { text } = req.body;
     
+
+    let fileUrl = null;
+    let fileType = null;
+
+    if (req.file) {
+    fileUrl = req.file.path || req.file.secure_url || null;
+    fileType = req.file.mimetype ? req.file.mimetype.split("/")[0] : null;
+  }
     let chat = await Chat.findOne({ 
         participants: { $all: [currentUserId, receiverId] }
     })
@@ -50,7 +67,9 @@ const sendMessage = async (req, res) => {
     const message = await Message.create({
         chatId: chat._id,
         senderId: currentUserId,
-        text
+        text,
+        fileUrl,
+        fileType
     });
 
     chat.lastMessage = message._id;
@@ -80,7 +99,6 @@ const getAllMessages = async (req, res) => {
         const otherContact = chat.participants.find(
             contact => contact._id.toString() !== currentUserId.toString()
         )
-console.log(otherContact)
         return {
             chatId: chat._id,
             fullname: otherContact.fullName,
