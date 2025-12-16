@@ -1,5 +1,7 @@
+import { urlBackend } from '../utils/baseUrl';
+
 export async function registerAction(prevState: unknown, formData: FormData) {
-  const response = await fetch('http://localhost:8000/api/auth/register', {
+  const response = await fetch(`${urlBackend}/api/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -18,7 +20,7 @@ export async function registerAction(prevState: unknown, formData: FormData) {
 }
 
 export async function loginAction(prevState: unknown, formData: FormData) {
-  const response = await fetch('http://localhost:8000/api/auth/login', {
+  const response = await fetch(`${urlBackend}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

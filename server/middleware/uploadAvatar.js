@@ -15,6 +15,6 @@ const createUpload = (folder) =>
   });
 
 module.exports = {
-  uploadAvatar: createUpload("avatars"),
+  uploadAvatar: createUpload("avatarts"),
   uploadContactImage: createUpload("contacts"),
 };
