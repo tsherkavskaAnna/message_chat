@@ -95,13 +95,11 @@ export default function RegisterForm() {
               Remember me
             </label>
           </div>
-          <a className="text-sm underline" href="#">
-            Forgot password?
-          </a>
         </div>
         <button className="w-full mt-8 mb-3 bg-amber-500 hover:bg-amber-600 transition-all active:scale-95 py-2.5 rounded text-white font-medium cursor-pointer">
           {isPending ? 'Loading...' : 'Sign Up'}
         </button>
+        {state?.message && <p className="text-green-500">{state.message}</p>}
         {state?.error && <p className="text-red-500">{state.error}</p>}
       </form>
     </div>

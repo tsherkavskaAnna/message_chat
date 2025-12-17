@@ -27,7 +27,7 @@ export default function HomePage() {
             </button>
           </div>
         </div>
-        <div className="relative w-full h-full rounded-r-2xl bg-withe/50 backdrop-blur-lg">
+        <div className="relative w-full h-full rounded-r-2xl bg-withe/50 backdrop-blur-lg ">
           <img
             src={Image}
             alt="girl-with-phone"

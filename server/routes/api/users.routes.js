@@ -28,8 +28,6 @@ router.post(
 
 router.post("/reset-password/:token", ctrl.resetPassword);
 
-router.get("/reset-password/:token", ctrl.createNewPassword);
-
 router.get("/current", authorized, ctrl.getCurrentUser);
 
 router.patch(

@@ -45,7 +45,7 @@ const registerUser = async (req, res) => {
   const verifyEmailUrl = {
     to: email,
     subject: "Verify email",
-    html: `<a target="_blank" href="${process.env.BASE_URL}/api/auth/verify/${veryficationCode}">Click verify email</a>`,
+    html: `<a target="_blank" href="${process.env.URL_FRONDEND}/verify/${veryficationCode}">Click verify email</a>`,
   };
 
   await sendEmail(verifyEmailUrl);
@@ -53,7 +53,7 @@ const registerUser = async (req, res) => {
   return res.status(201).json({
     status: "success",
     code: 201,
-    message: "User created",
+    message: "User registered successfully. Check your email to verify.",
     data: { user },
   });
 };
@@ -170,7 +170,7 @@ const resendVerifyEmail = async (req, res) => {
   const verifyEmailUrl = {
     to: email,
     subject: "Verify email",
-    html: `<a target="_blank" href="${process.env.BASE_URL}/api/auth/verify/${user.veryficationCode}">Click verify email</a>`,
+    html: `<a target="_blank" href="${process.env.URL_FRONDEND}/verify/${user.veryficationCode}">Click verify email</a>`,
   };
 
   await sendEmail(verifyEmailUrl);
@@ -195,7 +195,7 @@ const forgotPassword = async (req, res) => {
   const resetPasswordUrl = {
     to: email,
     subject: "Reset password",
-    html: `<a target="_blank" href="${process.env.BASE_URL}/api/auth/reset-password/${token}">Click reset password</a>`,
+    html: `<a target="_blank" href="${process.env.URL_FRONDEND}/reset-password/${token}">Click reset password</a>`,
   };
 
   await sendEmail(resetPasswordUrl);
@@ -228,23 +228,6 @@ const resetPassword = async (req, res) => {
     message: "Password updated successfully",
   });
 };
-// Cambiare password
-const createNewPassword = async (req, res) => {
-  const { token } = req.params;
-  const user = await User.findOne({
-    resetPasswordToken: token,
-    resetPasswordExpires: { $gt: Date.now() },
-  });
-
-  if (!user) return res.status(400).send("Token non valido o scaduto");
-
-  res.send(`
-    <form action="/api/auth/reset-password/${token}" method="POST">
-      <input type="password" name="password" placeholder="Nuova password" required />
-      <button type="submit">Reset Password</button>
-    </form>
-  `);
-};
 
 const logout = async (req, res) => {
   res.clearCookie("token", {
@@ -268,6 +251,5 @@ module.exports = {
   resendVerifyEmail: ctrlWrapper(resendVerifyEmail),
   forgotPassword: ctrlWrapper(forgotPassword),
   resetPassword: ctrlWrapper(resetPassword),
-  createNewPassword: ctrlWrapper(createNewPassword),
   logout: ctrlWrapper(logout),
 };

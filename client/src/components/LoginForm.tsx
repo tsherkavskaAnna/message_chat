@@ -1,10 +1,19 @@
 //import react from "react";
 
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { loginAction } from '../actions/authActions';
+import { useNavigate } from 'react-router-dom';
 
 export default function LoginForm() {
+  const navigate = useNavigate();
   const [state, submit, isPending] = useActionState(loginAction, null);
+
+  useEffect(() => {
+    if (state?.success) {
+      navigate('/dashboard');
+    }
+  }, [state?.success, navigate]);
+
   return (
     <div className="w-full content-center flex justify-center">
       <form className="p-6 w-3/4" action={submit}>
@@ -71,13 +80,14 @@ export default function LoginForm() {
               Remember me
             </label>
           </div>
-          <a className="text-sm underline" href="#">
+          <a className="text-sm underline" href="/forgot-password">
             Forgot password?
           </a>
         </div>
         <button className="w-full mt-8 mb-3 bg-indigo-500 hover:bg-indigo-600 transition-all active:scale-95 py-2.5 rounded text-white font-medium cursor-pointer">
           {isPending ? 'Loading...' : 'Sign In'}
         </button>
+        {state?.message && <p className="text-green-500">{state.message}</p>}
         {state?.error && <p className="text-red-500">{state.error}</p>}
       </form>
     </div>
