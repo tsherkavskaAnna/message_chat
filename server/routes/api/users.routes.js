@@ -20,6 +20,16 @@ router.post(
 
 router.post("/login", validateBody(schemas.addLoginUserSchema), ctrl.login);
 
+router.post(
+  "/forgot-password",
+  validateBody(schemas.emailUserSchema),
+  ctrl.forgotPassword
+);
+
+router.post("/reset-password/:token", ctrl.resetPassword);
+
+router.get("/reset-password/:token", ctrl.createNewPassword);
+
 router.get("/current", authorized, ctrl.getCurrentUser);
 
 router.patch(

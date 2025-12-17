@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Image from '../assets/images/girl-phone.png';
+
 import RegisterForm from '../components/RegisterForm';
 import WelcomeAnimated from '../components/WelcomeFade';
 import LoginForm from '../components/LoginForm';

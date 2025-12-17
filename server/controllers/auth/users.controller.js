@@ -34,7 +34,7 @@ const registerUser = async (req, res) => {
     email,
     password: hashedPassword,
     avatarImage: avatarImage,
-    veryficationCode,
+    veryficationCode: veryficationCode,
   });
 
   const token = jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: "24h" });
@@ -42,7 +42,6 @@ const registerUser = async (req, res) => {
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000,
   });
-
   const verifyEmailUrl = {
     to: email,
     subject: "Verify email",
@@ -82,9 +81,9 @@ const loginUser = async (req, res) => {
   const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "23h" });
 
   res.cookie("token", token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: false,
+    httpOnly: true, // da riccordare in produzione !!!!!
+    sameSite: "lax", // sameSite: "none",
+    secure: false, //  secure: true
     maxAge: 24 * 60 * 60 * 1000,
   });
 
@@ -94,7 +93,7 @@ const loginUser = async (req, res) => {
       id: user._id,
       email: user.email,
       username: user.username,
-      avatarImage: avatarImage,
+      avatarImage: user.avatarImage,
     },
   });
 };
@@ -147,6 +146,10 @@ const veryficationEmail = async (req, res) => {
     throw HttpError(404, "User not found");
   }
 
+  if (user.verify) {
+    throw HttpError(400, "Email already verified");
+  }
+
   await User.findByIdAndUpdate(user._id, {
     veryficationCode: "",
     verify: true,
@@ -158,8 +161,6 @@ const veryficationEmail = async (req, res) => {
 // Rimandare di nuovo email se user non ha ricevuto email prima
 const resendVerifyEmail = async (req, res) => {
   const { email } = req.body;
-  console.log(email);
-
   const user = await User.findOne({ email });
 
   if (!user) {
@@ -176,6 +177,73 @@ const resendVerifyEmail = async (req, res) => {
   res.json({
     message: "Email resend with success",
   });
+};
+// Password dimenticata
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw HttpError(404, "User not found");
+  }
+  const token = nanoid();
+  await User.findByIdAndUpdate(user._id, {
+    resetPasswordToken: token,
+    resetPasswordExpires: Date.now() + 1000 * 60 * 60, // 1 ora
+  });
+
+  const resetPasswordUrl = {
+    to: email,
+    subject: "Reset password",
+    html: `<a target="_blank" href="${process.env.BASE_URL}/api/auth/reset-password/${token}">Click reset password</a>`,
+  };
+
+  await sendEmail(resetPasswordUrl);
+  res.json({
+    message: "Email resend with success",
+  });
+};
+// Risettare password
+const resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+  const user = await User.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    throw HttpError(400, "Token invalid or expired");
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  await User.findByIdAndUpdate(user._id, {
+    password: hashedPassword,
+    resetPasswordToken: "",
+    resetPasswordExpires: null,
+  });
+
+  res.json({
+    message: "Password updated successfully",
+  });
+};
+// Cambiare password
+const createNewPassword = async (req, res) => {
+  const { token } = req.params;
+  const user = await User.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+
+  if (!user) return res.status(400).send("Token non valido o scaduto");
+
+  res.send(`
+    <form action="/api/auth/reset-password/${token}" method="POST">
+      <input type="password" name="password" placeholder="Nuova password" required />
+      <button type="submit">Reset Password</button>
+    </form>
+  `);
 };
 
 const logout = async (req, res) => {
@@ -198,5 +266,8 @@ module.exports = {
   updateUser: ctrlWrapper(updateUser),
   veryficationEmail: ctrlWrapper(veryficationEmail),
   resendVerifyEmail: ctrlWrapper(resendVerifyEmail),
+  forgotPassword: ctrlWrapper(forgotPassword),
+  resetPassword: ctrlWrapper(resetPassword),
+  createNewPassword: ctrlWrapper(createNewPassword),
   logout: ctrlWrapper(logout),
 };
