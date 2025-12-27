@@ -11,7 +11,7 @@ export default function UserSection() {
       <div className="flex flex-nowrap items-center">
         <UserAvatar />
         <div className="flex flex-col ml-4">
-          <h1 className="text-lg font-semibold text-indigo-600">
+          <h1 className="text-lg md:text-sm lg:text-lg font-semibold text-indigo-600">
             Welcome back
           </h1>
           <h2 className="text-sm text-slate-500">{user?.username}</h2>

@@ -1,5 +1,6 @@
 import ActiveContact from './ActiveContact';
 import MessagesSection from './MessagesSection';
+import ResponseMessSection from './ResponseMessSection';
 
 export default function ChatBox() {
   return (
@@ -10,8 +11,8 @@ export default function ChatBox() {
       <div className="flex-1 overflow-y-auto bg-white">
         <MessagesSection />
       </div>
-      <div className="bg-white p-6 h-24 border-t-2 border-slate-300 ">
-        Response section
+      <div className="bg-white lg:p-6 p-2">
+        <ResponseMessSection />
       </div>
     </div>
   );

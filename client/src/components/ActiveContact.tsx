@@ -11,8 +11,8 @@ export default function ActiveContact() {
 
   if (!activeContact) {
     return (
-      <div className="flex items-center justify-center h-full text-slate-400">
-        <h2>Select a contact for</h2>
+      <div className="flex items-center justify-center h-full">
+        <h2 className="text-indigo-600">Select a contact for</h2>
         <img src={Logo} alt="logo" className="w-18 h-18 object-contain" />
       </div>
     );
