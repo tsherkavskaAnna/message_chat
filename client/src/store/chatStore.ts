@@ -14,6 +14,7 @@ type Message = {
   text?: string;
   fileUrl?: string;
   createdAt: Date;
+  tempId?: string;
 };
 
 type ChatState = {
@@ -28,36 +29,54 @@ type ChatState = {
   clearChat: () => void;
 };
 
+let socketInitialized = false;
+
 const useChatStore = create<ChatState>((set, get) => {
-  socket.off('receive_message');
-  socket.on('receive_message', (message: Message & { chatId: string }) => {
-    if (message.chatId === get().chatId) {
-      set((state) => ({
-        messages: [...state.messages, message],
-      }));
-    }
-  });
+  if (!socketInitialized) {
+    socket.on('receive_message', (message: Message) => {
+      set((state) => {
+        if (message.tempId) {
+          return {
+            messages: state.messages.map((m) =>
+              m._id === message.tempId ? message : m
+            ),
+          };
+        }
+        if (state.messages.some((m) => m._id === message._id)) {
+          return state;
+        }
+
+        return { messages: [...state.messages, message] };
+      });
+    });
+
+    socketInitialized = true;
+  }
   return {
     activeContactId: null,
     messages: [],
     loading: true,
     chatId: null,
-    openChat: async (contactId) => {
+    openChat: async (contactId: string) => {
+      const previousChatId = get().chatId;
+      if (previousChatId) socket.emit('leave_room', previousChatId);
+
       set({ loading: true, activeContactId: contactId });
       const data = await getMessagesByContact(contactId);
+      console.log('Joining room', data.chatId);
       set({
         messages: data.messages,
         chatId: data.chatId,
         loading: false,
       });
-      socket.emit('join_chat', { chatId: data.chatId });
+      socket.emit('join_room', data.chatId);
     },
     sendMessageToContact: async (formData) => {
       const contactId = get().activeContactId;
       const chatId = get().chatId;
       const tempId = nanoid();
 
-      if (!contactId) {
+      if (!contactId || !chatId) {
         return;
       }
       const textValue = String(formData.get('text') || '').trim();
@@ -75,15 +94,9 @@ const useChatStore = create<ChatState>((set, get) => {
       set({
         messages: [...get().messages, optimisticMessage],
       });
-
       try {
-        const res = await sendMessage(contactId, formData);
-        socket.emit('send_message', { chatId, message: res.message });
-        set((state) => ({
-          messages: state.messages.map((m) =>
-            m._id === tempId ? res.message : m
-          ),
-        }));
+        formData.append('tempId', tempId);
+        await sendMessage(contactId, formData);
       } catch {
         set((state) => ({
           messages: state.messages.filter((m) => m._id !== tempId),
@@ -105,6 +118,12 @@ const useChatStore = create<ChatState>((set, get) => {
       }));
     },
     clearChat: () => {
+      const currentChatId = get().chatId;
+
+      if (currentChatId) {
+        socket.emit('leave_room', currentChatId);
+      }
+
       set({
         activeContactId: null,
         chatId: null,

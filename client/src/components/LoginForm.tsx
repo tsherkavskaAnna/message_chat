@@ -7,17 +7,22 @@ import { toast } from 'react-toastify';
 export default function LoginForm() {
   const navigate = useNavigate();
   const [state, submit, isPending] = useActionState(loginAction, null);
-  const checkAuth = useAuthStore((state) => state.checkAuth);
 
   useEffect(() => {
-    if (state?.success) {
-      (async () => {
-        await checkAuth();
-        navigate('/dashboard');
-        toast.success('Login successful');
-      })();
+    if (state?.success && state?.user) {
+      useAuthStore.setState({
+        user: state.user,
+        loading: false,
+      });
+
+      toast.success(state.message);
+      navigate('/dashboard');
     }
-  }, [state, checkAuth, navigate]);
+
+    if (state?.error) {
+      toast.error(state.error);
+    }
+  }, [state, navigate]);
 
   return (
     <div className="w-full content-center flex justify-center">

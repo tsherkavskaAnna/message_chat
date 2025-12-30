@@ -32,7 +32,7 @@ export default function ResponseMessSection() {
     setText('');
   };
   return (
-    <div className="px-4 relative">
+    <div className="px-4 md:relative ">
       {showEmojis && (
         <div className="absolute bottom-20 left-4 z-50">
           <EmojiPicker onEmojiClick={handleEmojiClick} />
@@ -79,7 +79,7 @@ export default function ResponseMessSection() {
             onChange={(e) => setText(e.target.value)}
             value={text}
             type="text"
-            placeholder="Write your message..."
+            placeholder=""
             className="outline-none"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
@@ -93,7 +93,7 @@ export default function ResponseMessSection() {
         </div>
         <button
           type="submit"
-          className="px-3 py-2 bg-indigo-500  flex items-center justify-center rounded cursor-pointer"
+          className="px-3 py-2 bg-indigo-500 flex items-center justify-center rounded cursor-pointer absolute right-10 bottom-4 md:static"
         >
           <IoSend size={20} color="white" />
         </button>
