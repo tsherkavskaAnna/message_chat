@@ -24,21 +24,38 @@ export async function registerAction(prevState: unknown, formData: FormData) {
 }
 
 export async function loginAction(prevState: unknown, formData: FormData) {
-  const response = await fetch(`${urlBackend}/api/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      email: formData.get('email'),
-      password: formData.get('password'),
-    }),
-    credentials: 'include',
-  });
+  try {
+    const response = await fetch(`${urlBackend}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        email: formData.get('email'),
+        password: formData.get('password'),
+      }),
+    });
 
-  if (!response.ok) {
-    const error = await response.json();
-    return { error: error.message || 'Login failed' };
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: data.message || 'Login failed',
+      };
+    }
+
+    return {
+      success: true,
+      message: data.message || 'Login successful',
+      user: data.user,
+    };
+  } catch (e) {
+    console.log(e);
+    return {
+      success: false,
+      error: 'Network error',
+    };
   }
-  return { success: true, message: 'Login successful' };
 }
 
 export async function forgotPasswordAction(

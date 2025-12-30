@@ -29,7 +29,6 @@ const createnNewContact = async (req, res) => {
 const updateContact = async (req, res) => {
   const { contactId } = req.params;
   const updateData = { ...req.body };
-  console.log(contactId, updateData);
 
   if (req.file) {
     updateData.image = req.file.path;

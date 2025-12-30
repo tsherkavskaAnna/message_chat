@@ -63,7 +63,6 @@ const useChatStore = create<ChatState>((set, get) => {
 
       set({ loading: true, activeContactId: contactId });
       const data = await getMessagesByContact(contactId);
-      console.log('Joining room', data.chatId);
       set({
         messages: data.messages,
         chatId: data.chatId,

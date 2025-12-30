@@ -1,25 +1,46 @@
 const Chat = require("../../models/Chat");
 const Message = require("../../models/Message");
+const Contact = require("../../models/Contact");
+const User = require("../../models/user");
 const { getIO } = require("../../utils/socket");
 const ctrlWrapper = require("../../helpers/controlWrapper");
 const mongoose = require("mongoose");
 
+const getOrCreateChat = async (currentUserId, contactId) => {
+  const contact = await Contact.findById(contactId);
+  if (!contact) throw new Error("Contact not found");
+
+  const receiver = await User.findOne({ email: contact.email });
+  if (!receiver) throw new Error("User not found");
+
+  const participantsKey = [currentUserId.toString(), receiver._id.toString()]
+    .sort()
+    .join("_");
+
+  let chat = await Chat.findOne({ participantsKey });
+  if (!chat) {
+    chat = await Chat.create({
+      participants: [currentUserId, receiver._id],
+      participantsKey,
+      lastMessage: null,
+    });
+  }
+
+  return chat;
+};
+
 //ricevere massagi di user logato con paginazione
 const getMessagesByUserId = async (req, res) => {
-  const currentUserId = req.user._id;
-  const receiverId = req.params.contactId;
+  const currentUserId = new mongoose.Types.ObjectId(req.user._id).toString();
+  const receiverId = new mongoose.Types.ObjectId(
+    req.params.contactId
+  ).toString();
+
   const limit = Number(req.query.limit) || 5;
   const page = Number(req.query.page) || 1;
   const skip = (page - 1) * limit;
 
-  const chat = await Chat.findOne({
-    participants: { $all: [currentUserId, receiverId] },
-  });
-
-  if (!chat) {
-    return res.json({ messages: [] });
-  }
-
+  const chat = await getOrCreateChat(currentUserId, req.params.contactId);
   const messages = await Message.find({
     chatId: chat._id,
   })
@@ -29,7 +50,7 @@ const getMessagesByUserId = async (req, res) => {
 
   await Message.updateMany(
     { chatId: chat._id, read: false, senderId: { $ne: currentUserId } },
-    { $set: { read: true, readAt: Date() } }
+    { $set: { read: true, readAt: new Date() } }
   );
 
   res.status(200).json({
@@ -43,8 +64,14 @@ const getMessagesByUserId = async (req, res) => {
 
 //cercare chat esistente o creare nuovo per inviatre massagio con file (imagini)
 const sendMessage = async (req, res) => {
-  const currentUserId = req.user._id;
-  const receiverId = new mongoose.Types.ObjectId(req.params.contactId);
+  const currentUserId = new mongoose.Types.ObjectId(req.user._id).toString();
+  const receiverId = new mongoose.Types.ObjectId(
+    req.params.contactId
+  ).toString();
+  let tempId = req.body.tempId;
+  if (!tempId && req.body.get) {
+    tempId = req.body.get("tempId");
+  }
   const { text } = req.body;
 
   let fileUrl = null;
@@ -54,16 +81,7 @@ const sendMessage = async (req, res) => {
     fileUrl = req.file.path || req.file.secure_url || null;
     fileType = req.file.mimetype ? req.file.mimetype.split("/")[0] : null;
   }
-  let chat = await Chat.findOne({
-    participants: { $all: [currentUserId, receiverId] },
-  });
-
-  if (!chat) {
-    chat = await Chat.create({
-      participants: [currentUserId, receiverId],
-      lastMessage: null,
-    });
-  }
+  const chat = await getOrCreateChat(currentUserId, req.params.contactId);
   const message = await Message.create({
     chatId: chat._id,
     senderId: currentUserId,
@@ -74,10 +92,18 @@ const sendMessage = async (req, res) => {
 
   chat.lastMessage = message._id;
   await chat.save();
-  const io = getIO();
-  if (io) {
-    io.to(chat._id.toString()).emit("receive_message", message);
-  }
+  getIO()
+    .to(chat._id.toString())
+    .emit("chat_updated", {
+      chatId: chat._id,
+      lastMessage: {
+        text: message.text,
+        createdAt: message.createdAt,
+        senderId: message.senderId,
+      },
+    });
+  const fullMessage = { ...message.toObject(), tempId };
+  getIO().to(chat._id.toString()).emit("receive_message", fullMessage);
 
   res.status(201).json({
     status: "success",
@@ -87,28 +113,29 @@ const sendMessage = async (req, res) => {
 };
 
 //Modificare massagio di user logato
-
 const editMessage = async (req, res) => {
   const messageId = req.params.messageId;
   const { text } = req.body;
-  const message = await Message.findByIdAndUpdate(
-    messageId,
-    { text },
-    { new: true }
-  );
-  if (!message) {
-    return res
-      .status(404)
-      .json({ status: "error", message: "Message not found" });
+  const file = req.file;
+
+  if (!text && !file) {
+    return res.status(400).json({ message: "Text or file is required" });
   }
 
-  if (io) {
-    io.to(message.chatId.toString()).emit("editMessage", message);
-  }
-  res.status(200).json({
-    status: "success",
-    message: "Message updated",
+  const updateData = {};
+  if (text) updateData.text = text;
+  if (file) updateData.fileUrl = file.path;
+  if (file) updateData.fileType = file.mimetype.split("/")[0];
+
+  const message = await Message.findByIdAndUpdate(messageId, updateData, {
+    new: true,
   });
+
+  if (!message) return res.status(404).json({ message: "Message not found" });
+
+  getIO().to(message.chatId.toString()).emit("editMessage", message);
+
+  res.status(200).json({ status: "success", message });
 };
 
 const deleteMessage = async (req, res) => {
@@ -119,10 +146,7 @@ const deleteMessage = async (req, res) => {
       .status(404)
       .json({ status: "error", message: "Message not found" });
   }
-
-  if (io) {
-    io.to(message.chatId.toString()).emit("deleteMessage", message);
-  }
+  getIO().to(message.chatId.toString()).emit("deleteMessage", { messageId });
   res.status(200).json({
     status: "success",
     message: "Message deleted",
@@ -148,12 +172,13 @@ const getAllMessages = async (req, res) => {
     const otherContact = chat.participants.find(
       (contact) => contact._id.toString() !== currentUserId.toString()
     );
+
     return {
       chatId: chat._id,
-      fullname: otherContact.fullName,
-      username: otherContact.username,
-      avatarImage: otherContact.avatarImage,
-      lastMessage: chat.lastMessage,
+      fullname: otherContact?.fullName || "",
+      username: otherContact?.username,
+      avatarImage: otherContact?.avatarImage,
+      lastMessage: chat.lastMessage || null,
     };
   });
   res.json({

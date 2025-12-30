@@ -15,13 +15,18 @@ const initSocket = (server, urlFrontend) => {
     console.log("User connected", socket.id);
 
     // entrare in una stanza per la chat
-    socket.on("join_chat", (chatId) => {
-      socket.join(chatId);
+    socket.on("join_room", (chatId) => {
+      socket.join(chatId.toString());
     });
 
     // invio messaggio solo nella stanza della chat
     socket.on("send_message", ({ chatId, message }) => {
       io.to(chatId).emit("receive_message", message);
+    });
+
+    // uscire dalla stanza della chat
+    socket.on("leave_room", (chatId) => {
+      socket.leave(chatId);
     });
 
     socket.on("disconnect", () => {

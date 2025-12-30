@@ -3,7 +3,7 @@ import useContactsStore from '../store/contactsStore';
 import Logo from '../assets/icons/logo-chat.png';
 import { MdDelete } from 'react-icons/md';
 import { FaUserPen } from 'react-icons/fa6';
-import { GiBroom } from 'react-icons/gi';
+import { BiExit } from 'react-icons/bi';
 
 import { MdArrowBackIosNew } from 'react-icons/md';
 import { DropdownMenu } from '../UI-Component/DropdownMenu';
@@ -54,9 +54,9 @@ export default function ActiveContact() {
       ),
     },
     {
-      title: 'Clear chat',
+      title: 'Leave chat',
       action: clearChat,
-      icon: <GiBroom style={{ width: '24px', height: '24px', color: 'red' }} />,
+      icon: <BiExit style={{ width: '24px', height: '24px', color: 'blue' }} />,
     },
     {
       title: 'Delete contact',
