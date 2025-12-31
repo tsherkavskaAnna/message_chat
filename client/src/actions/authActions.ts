@@ -25,7 +25,7 @@ export async function registerAction(_prevState: unknown, formData: FormData) {
 
 export async function loginAction(_prevState: unknown, formData: FormData) {
   try {
-    const response = await fetch(`${urlBackend}api/auth/login`, {
+    const response = await fetch(`${urlBackend}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
