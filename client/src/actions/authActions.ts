@@ -1,6 +1,6 @@
 import { urlBackend } from '../utils/baseUrl';
 
-export async function registerAction(prevState: unknown, formData: FormData) {
+export async function registerAction(_prevState: unknown, formData: FormData) {
   const response = await fetch(`${urlBackend}/api/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -23,7 +23,7 @@ export async function registerAction(prevState: unknown, formData: FormData) {
   };
 }
 
-export async function loginAction(prevState: unknown, formData: FormData) {
+export async function loginAction(_prevState: unknown, formData: FormData) {
   try {
     const response = await fetch(`${urlBackend}/api/auth/login`, {
       method: 'POST',
@@ -59,7 +59,7 @@ export async function loginAction(prevState: unknown, formData: FormData) {
 }
 
 export async function forgotPasswordAction(
-  prevState: unknown,
+  _prevState: unknown,
   formData: FormData
 ) {
   const email = formData.get('email');
@@ -78,7 +78,7 @@ export async function forgotPasswordAction(
 }
 
 export async function resetPasswordAction(
-  prevState: unknown,
+  _prevState: unknown,
   formData: FormData,
   token: string
 ) {
@@ -100,8 +100,8 @@ export async function resetPasswordAction(
   return { success: true, message: 'Password reset with success' };
 }
 export async function verifyEmailAction(
-  prevState: unknown,
-  formData: FormData,
+  _prevState: unknown,
+  _formData: FormData,
   veryficationCode: string
 ) {
   const response = await fetch(

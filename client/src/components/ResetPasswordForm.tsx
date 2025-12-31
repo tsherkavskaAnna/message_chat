@@ -6,8 +6,8 @@ import { toast } from 'react-toastify';
 export default function ResetPasswordForm() {
   const { token } = useParams();
   const [state, submit, isPending] = useActionState(
-    (prevState: unknown, formData: FormData) => {
-      return resetPasswordAction(prevState, formData, token!);
+    async (_prevState: unknown, formData: FormData) => {
+      return await resetPasswordAction(_prevState, formData, token!);
     },
     null
   );

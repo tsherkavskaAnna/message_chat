@@ -9,8 +9,8 @@ export default function VerifyEmailPage() {
   const checkAuth = useAuthStore((state) => state.checkAuth);
   const { veryficationCode } = useParams<{ veryficationCode: string }>();
   const [state, submit, isPending] = useActionState(
-    (prevState: unknown, formData: FormData) =>
-      verifyEmailAction(prevState, formData, veryficationCode!),
+    (_prevState: unknown, formData: FormData) =>
+      verifyEmailAction(_prevState, formData, veryficationCode!),
     null
   );
 
