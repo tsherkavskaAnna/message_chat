@@ -16,6 +16,7 @@ const getAllUsers = async (req, res) => {
   });
 };
 
+//Register user
 const registerUser = async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -57,7 +58,7 @@ const registerUser = async (req, res) => {
     data: { user },
   });
 };
-
+// Login user with token
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
   const avatarImage = req.file ? req.file.path : "";
@@ -89,6 +90,7 @@ const loginUser = async (req, res) => {
 
   res.json({
     message: "Login successfull",
+    token,
     user: {
       id: user._id,
       email: user.email,
@@ -125,6 +127,7 @@ const updateUser = async (req, res) => {
   });
 };
 
+//User logato o registrato
 const getCurrentUser = async (req, res) => {
   const user = req.user;
 
@@ -133,6 +136,7 @@ const getCurrentUser = async (req, res) => {
     email: user.email,
     username: user.username,
     avatarImage: user.avatarImage,
+    token: req.token,
   });
 };
 

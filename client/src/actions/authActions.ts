@@ -1,3 +1,4 @@
+import useAuthStore from '../store/authStore';
 import { urlBackend } from '../utils/baseUrl';
 
 export async function registerAction(_prevState: unknown, formData: FormData) {
@@ -28,6 +29,7 @@ export async function loginAction(_prevState: unknown, formData: FormData) {
     const response = await fetch(`${urlBackend}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+
       credentials: 'include',
       body: JSON.stringify({
         email: formData.get('email'),
@@ -43,17 +45,16 @@ export async function loginAction(_prevState: unknown, formData: FormData) {
         error: data.message || 'Login failed',
       };
     }
-
+    useAuthStore.getState().setAuth(data.user, data.token);
     return {
       success: true,
       message: data.message || 'Login successful',
       user: data.user,
     };
-  } catch (e) {
-    console.log(e);
+  } catch {
     return {
       success: false,
-      error: 'Network error',
+      error: 'Network error with login',
     };
   }
 }

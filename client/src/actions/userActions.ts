@@ -1,7 +1,10 @@
 import { urlBackend } from '../utils/baseUrl';
 
-export async function getCurrentUser() {
+export async function getCurrentUser(token: string) {
   const res = await fetch(`${urlBackend}/api/auth/current`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     credentials: 'include',
   });
 

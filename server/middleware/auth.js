@@ -7,6 +7,10 @@ const authorized = async (req, res, next) => {
   try {
     const token = req.cookies.token;
 
+    if (!token && req.headers.authorization) {
+      token = req.headers.authorization.replace("Bearer ", "");
+    }
+
     if (!token) {
       return next(HttpError(401, "Missing or invalid Authorization header"));
     }
