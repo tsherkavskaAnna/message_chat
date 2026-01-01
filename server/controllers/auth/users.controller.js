@@ -79,12 +79,11 @@ const loginUser = async (req, res) => {
   };
 
   const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "23h" });
-  const isProd = process.env.NODE_ENV === "production";
 
   res.cookie("token", token, {
     httpOnly: true,
-    sameSite: isProd ? "none" : "lax",
-    secure: isProd,
+    sameSite: "none",
+    secure: true,
     maxAge: 24 * 60 * 60 * 1000,
   });
 
