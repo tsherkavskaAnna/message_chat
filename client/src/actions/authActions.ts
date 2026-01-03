@@ -1,4 +1,3 @@
-import useAuthStore from '../store/authStore';
 import { urlBackend } from '../utils/baseUrl';
 
 export async function registerAction(_prevState: unknown, formData: FormData) {
@@ -29,7 +28,6 @@ export async function loginAction(_prevState: unknown, formData: FormData) {
     const response = await fetch(`${urlBackend}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-
       credentials: 'include',
       body: JSON.stringify({
         email: formData.get('email'),
@@ -45,7 +43,7 @@ export async function loginAction(_prevState: unknown, formData: FormData) {
         error: data.message || 'Login failed',
       };
     }
-    useAuthStore.getState().setAuth(data.user, data.token);
+    localStorage.setItem('token', data.token);
     return {
       success: true,
       message: data.message || 'Login successful',

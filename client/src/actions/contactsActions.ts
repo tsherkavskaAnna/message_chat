@@ -1,7 +1,11 @@
 import { urlBackend } from '../utils/baseUrl';
 
 export async function getContacts() {
+  const token = localStorage.getItem('token');
   const res = await fetch(`${urlBackend}/api/contacts`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     credentials: 'include',
   });
 

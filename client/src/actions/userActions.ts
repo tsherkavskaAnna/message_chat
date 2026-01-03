@@ -1,6 +1,7 @@
 import { urlBackend } from '../utils/baseUrl';
 
-export async function getCurrentUser(token: string) {
+export async function getCurrentUser() {
+  const token = localStorage.getItem('token');
   const res = await fetch(`${urlBackend}/api/auth/current`, {
     headers: {
       Authorization: `Bearer ${token}`,

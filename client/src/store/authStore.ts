@@ -16,7 +16,6 @@ type AuthState = {
   user: User | null;
   token: string | null;
   loading: boolean;
-  setAuth: (user: User, token: string) => void;
   checkAuth: () => Promise<void>;
   updateUser: (formData: FormData) => Promise<void>;
   logout: () => void;
@@ -27,21 +26,16 @@ const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       loading: true,
-      token: null,
-      setAuth: (user, token) => {
-        localStorage.setItem('token', token);
-        set({ user, token, loading: false });
-      },
+      token: localStorage.getItem('token'),
       checkAuth: async () => {
         const token = localStorage.getItem('token');
-
         if (!token) {
           set({ user: null, token: null, loading: false });
           return;
         }
 
         try {
-          const user = await getCurrentUser(token);
+          const user = await getCurrentUser();
           set({ user, token, loading: false });
         } catch {
           localStorage.removeItem('token');
