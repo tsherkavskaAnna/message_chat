@@ -6,7 +6,6 @@ export async function getContacts() {
     headers: {
       Authorization: `Bearer ${token}`,
     },
-    credentials: 'include',
   });
 
   if (!res.ok) {
@@ -16,15 +15,17 @@ export async function getContacts() {
 }
 
 export async function createNewContact(formData: FormData) {
+  const token = localStorage.getItem('token');
   const body = {
     fullName: formData.get('fullName'),
     username: formData.get('username'),
     email: formData.get('email'),
   };
   const response = await fetch(`${urlBackend}/api/contacts`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
 
@@ -36,9 +37,12 @@ export async function createNewContact(formData: FormData) {
 }
 
 export async function updateContact(contactId: string, formData: FormData) {
+  const token = localStorage.getItem('token');
   const response = await fetch(`${urlBackend}/api/contacts/${contactId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     method: 'PATCH',
-    credentials: 'include',
     body: formData,
   });
 
@@ -50,9 +54,12 @@ export async function updateContact(contactId: string, formData: FormData) {
 }
 
 export async function deleteContact(contactId: string) {
+  const token = localStorage.getItem('token');
   const response = await fetch(`${urlBackend}/api/contacts/${contactId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     method: 'DELETE',
-    credentials: 'include',
   });
 
   if (!response.ok) {

@@ -2,11 +2,13 @@ import { urlBackend } from '../utils/baseUrl';
 
 export async function getCurrentUser() {
   const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('No token');
+  }
   const res = await fetch(`${urlBackend}/api/auth/current`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
-    credentials: 'include',
   });
 
   if (!res.ok) return null;
@@ -14,18 +16,25 @@ export async function getCurrentUser() {
 }
 
 export async function logout() {
+  const token = localStorage.getItem('token');
   const res = await fetch(`${urlBackend}/api/auth/logout`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     method: 'POST',
-    credentials: 'include',
   });
   if (!res.ok) return null;
+  localStorage.removeItem('token');
   return res.json();
 }
 
 export async function updateCurrentUser(formData: FormData) {
+  const token = localStorage.getItem('token');
   const response = await fetch(`${urlBackend}/api/auth/current`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     method: 'PATCH',
-    credentials: 'include',
     body: formData,
   });
 

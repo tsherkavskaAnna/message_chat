@@ -1,8 +1,11 @@
 import { urlBackend } from '../utils/baseUrl';
 
 export async function getAllMessages() {
+  const token = localStorage.getItem('token');
   const res = await fetch(`${urlBackend}/chat/all`, {
-    credentials: 'include',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 
   if (!res.ok) {
@@ -12,8 +15,11 @@ export async function getAllMessages() {
 }
 
 export async function getMessagesByContact(contactId: string) {
+  const token = localStorage.getItem('token');
   const res = await fetch(`${urlBackend}/api/chat/messages/${contactId}`, {
-    credentials: 'include',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 
   if (!res.ok) {
@@ -23,9 +29,12 @@ export async function getMessagesByContact(contactId: string) {
 }
 
 export async function sendMessage(contactId: string, formData: FormData) {
+  const token = localStorage.getItem('token');
   const res = await fetch(`${urlBackend}/api/chat/send/${contactId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     method: 'POST',
-    credentials: 'include',
     body: formData,
   });
 
@@ -37,9 +46,12 @@ export async function sendMessage(contactId: string, formData: FormData) {
 
 //PATCH
 export async function updateMessage(messageId: string, formData: FormData) {
+  const token = localStorage.getItem('token');
   const res = await fetch(`${urlBackend}/api/chat/messages/${messageId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     method: 'PATCH',
-    credentials: 'include',
     body: formData,
   });
 
@@ -50,7 +62,11 @@ export async function updateMessage(messageId: string, formData: FormData) {
 }
 //DELETE
 export async function deleteMessage(messageId: string) {
+  const token = localStorage.getItem('token');
   const response = await fetch(`${urlBackend}/api/chat/messages/${messageId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     method: 'DELETE',
     credentials: 'include',
   });

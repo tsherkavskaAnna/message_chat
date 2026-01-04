@@ -5,10 +5,11 @@ const { SECRET_KEY } = process.env;
 
 const authorized = async (req, res, next) => {
   try {
-    const token = req.cookies.token;
-
-    if (!token && req.headers.authorization) {
+    let token = null;
+    if (req.headers.authorization?.startsWith("Bearer ")) {
       token = req.headers.authorization.replace("Bearer ", "");
+    } else if (req.cookies?.token) {
+      token = req.cookies.token;
     }
 
     if (!token) {
