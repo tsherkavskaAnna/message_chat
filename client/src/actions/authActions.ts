@@ -3,13 +3,14 @@ import { urlBackend } from '../utils/baseUrl';
 export async function registerAction(_prevState: unknown, formData: FormData) {
   const response = await fetch(`${urlBackend}/api/auth/register`, {
     method: 'POST',
-
+    headers: {
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({
       username: formData.get('username'),
       email: formData.get('email'),
       password: formData.get('password'),
     }),
-    credentials: 'include',
   });
 
   if (!response.ok) {
