@@ -23,6 +23,7 @@ export async function createNewContact(formData: FormData) {
   };
   const response = await fetch(`${urlBackend}/api/contacts`, {
     headers: {
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
     method: 'POST',
